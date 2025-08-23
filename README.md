@@ -5,10 +5,7 @@
 ## Пример
 
 ```rust
-
 async fn main() {
-    dotenvy::dotenv().unwrap();
-
     let secret = env::var("TOKEN").unwrap();
 
     let finam = finam::FinamSdk::new(&secret).await.unwrap();
@@ -24,7 +21,25 @@ async fn main() {
         .into_inner();
 
     if let Some(quote) = response.quote {
-        println!("{:?}", quote.last);
+        println!("{:?} {:?}", quote.timestamp, quote.last);
+    }
+
+    let request = SubscribeLatestTradesRequest {
+        symbol: "SBER@MISX".to_string(),
+    };
+
+    let response = finam
+        .market_data()
+        .subscribe_latest_trades(request)
+        .await
+        .unwrap();
+
+    let mut streaming = response.into_inner();
+
+    loop {
+        if let Some(next_message) = streaming.message().await.unwrap() {
+            println!("{:?}", next_message.trades);
+        }
     }
 }
 ```
