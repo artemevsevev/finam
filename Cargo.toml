@@ -12,9 +12,11 @@ categories = ["finance"]
 exclude = ["finam-trade-api/*", "googleapis/*"]
 
 [dependencies]
+log = "0.4.27"
 prost = "0.14.1"
 prost-types = "0.14.1"
 thiserror = "2.0.12"
+tokio = "1.47.1"
 tonic = { version = "0.14.1", features = [
     "tls-ring",
     "tls-native-roots",
