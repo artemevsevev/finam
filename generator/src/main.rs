@@ -2,7 +2,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     tonic_prost_build::configure()
         .build_server(false)
         .out_dir("../src")
-        .include_file("mod.rs")
         .compile_protos(
             &[
                 "../finam-trade-api/proto/grpc/tradeapi/v1/accounts/accounts_service.proto",
