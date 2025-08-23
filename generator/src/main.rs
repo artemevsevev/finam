@@ -2,6 +2,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     tonic_prost_build::configure()
         .build_server(false)
         .out_dir("../src")
+        .include_file("mod.rs")
         .compile_protos(
             &[
                 "../finam-trade-api/proto/grpc/tradeapi/v1/accounts/accounts_service.proto",
@@ -14,19 +15,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             ],
             &["../finam-trade-api/proto", "../googleapis"],
         )?;
-
-    std::fs::rename("../src/grpc.tradeapi.v1.rs", "../src/api.rs")?;
-    std::fs::rename(
-        "../src/grpc.tradeapi.v1.accounts.rs",
-        "../src/api.accounts.rs",
-    )?;
-    std::fs::rename("../src/grpc.tradeapi.v1.assets.rs", "../src/api.assets.rs")?;
-    std::fs::rename("../src/grpc.tradeapi.v1.auth.rs", "../src/api.auth.rs")?;
-    std::fs::rename(
-        "../src/grpc.tradeapi.v1.marketdata.rs",
-        "../src/api.marketdata.rs",
-    )?;
-    std::fs::rename("../src/grpc.tradeapi.v1.orders.rs", "../src/api.orders.rs")?;
 
     Ok(())
 }

@@ -1,1 +1,1 @@
-# finam
+# Finam API SDK

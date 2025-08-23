@@ -1,2 +1,5 @@
 /target
+/debug
 /generator/target
+Cargo.lock
+.DS_Store

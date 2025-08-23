@@ -1,0 +1,23 @@
+[package]
+name = "finam"
+version = "0.1.0"
+edition = "2024"
+authors = ["Artem Evsevev <artem@qrsoft.ru>"]
+description = "SDK для работы с API Финам"
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/artemevsevev/finam"
+keywords = ["trading", "finam", "sdk", "api"]
+categories = ["finance"]
+exclude = ["finam-trade-api/*", "googleapis/*"]
+
+[dependencies]
+prost = "0.14.1"
+prost-types = "0.14.1"
+thiserror = "2.0.12"
+tonic = { version = "0.14.1", features = [
+    "tls-ring",
+    "tls-native-roots",
+    "gzip",
+] }
+tonic-prost = { version = "0.14.1"}
