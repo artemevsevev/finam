@@ -1,3 +1,6 @@
 [submodule "finam-trade-api"]
 	path = finam-trade-api
 	url = https://github.com/FinamWeb/finam-trade-api
+[submodule "googleapis"]
+	path = googleapis
+	url = https://github.com/googleapis/googleapis
