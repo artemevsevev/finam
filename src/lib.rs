@@ -91,17 +91,24 @@ impl FinamSdkInterceptor {
             loop {
                 tokio::time::sleep(tokio::time::Duration::from_secs(60 * 10)).await;
 
-                let jwt_token = match generate_jwt_token(channel.clone(), secret.clone()).await {
-                    Ok(value) => value,
-                    Err(_) => {
-                        tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
-                        log::error!("Failed to generate JWT token. Waiting for 5 seconds...");
-                        continue;
-                    }
-                };
+                loop {
+                    match generate_jwt_token(channel.clone(), secret.clone()).await {
+                        Ok(value) => {
+                            let token = updating_token.clone();
+                            *token.lock().unwrap() = value;
 
-                let token = updating_token.clone();
-                *token.lock().unwrap() = jwt_token;
+                            break;
+                        }
+
+                        Err(error) => {
+                            tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
+                            log::error!(
+                                "Failed to generate JWT token. Waiting for 5 seconds... {:?}",
+                                error
+                            );
+                        }
+                    };
+                }
             }
         });
 
