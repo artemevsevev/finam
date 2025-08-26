@@ -177,11 +177,12 @@ impl FinamSdkInterceptor {
                         }
 
                         Err(error) => {
-                            tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
                             log::error!(
                                 "Failed to generate JWT token. Waiting for 5 seconds... {:?}",
                                 error
                             );
+
+                            tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
                         }
                     };
                 }
@@ -198,7 +199,7 @@ impl FinamSdkInterceptor {
     /// # Возвращает
     ///
     /// * `Result<String, tonic::Status>` - JWT токен при успешном получении или ошибку.
-    pub fn get_jwt_token(&self) -> Result<String, tonic::Status> {
+    fn get_jwt_token(&self) -> Result<String, tonic::Status> {
         Ok(self
             .jwt_token
             .lock()

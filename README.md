@@ -7,12 +7,10 @@
 ```rust
 async fn main() {
     let secret = env::var("TOKEN").unwrap();
-
     let finam = finam::FinamSdk::new(&secret).await.unwrap();
 
-    let mut market_data = finam.market_data();
-
-    let response = market_data
+    let quote_response = finam
+        .market_data()
         .last_quote(QuoteRequest {
             symbol: "SBER@MISX".to_string(),
         })
@@ -20,25 +18,22 @@ async fn main() {
         .unwrap()
         .into_inner();
 
-    if let Some(quote) = response.quote {
+    if let Some(quote) = quote_response.quote {
         println!("{:?} {:?}", quote.timestamp, quote.last);
     }
 
-    let request = SubscribeLatestTradesRequest {
-        symbol: "SBER@MISX".to_string(),
-    };
-
-    let response = finam
+    let mut streaming = finam
         .market_data()
-        .subscribe_latest_trades(request)
+        .subscribe_latest_trades(SubscribeLatestTradesRequest {
+            symbol: "SBER@MISX".to_string(),
+        })
         .await
-        .unwrap();
-
-    let mut streaming = response.into_inner();
+        .unwrap()
+        .into_inner();
 
     loop {
-        if let Some(next_message) = streaming.message().await.unwrap() {
-            println!("{:?}", next_message.trades);
+        if let Some(message) = streaming.message().await.unwrap() {
+            println!("{:?}", message.trades);
         }
     }
 }
