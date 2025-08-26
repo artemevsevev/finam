@@ -1,4 +1,4 @@
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, RwLock};
 
 use thiserror::Error;
 use tonic::{
@@ -139,7 +139,7 @@ impl FinamSdk {
 /// добавление к каждому исходящему запросу в API.
 #[derive(Debug, Clone)]
 pub struct FinamSdkInterceptor {
-    jwt_token: Arc<Mutex<String>>,
+    jwt_token: Arc<RwLock<String>>,
 }
 
 impl FinamSdkInterceptor {
@@ -156,7 +156,7 @@ impl FinamSdkInterceptor {
     ///
     /// * `Result<Self, FinamSdkError>` - Экземпляр интерцептора при успешном создании или ошибку.
     pub async fn new(secret: &str, channel: Channel) -> Result<Self, FinamSdkError> {
-        let token = Arc::new(Mutex::new(
+        let token = Arc::new(RwLock::new(
             generate_jwt_token(channel.clone(), secret.to_string()).await?,
         ));
 
@@ -171,7 +171,7 @@ impl FinamSdkInterceptor {
                     match generate_jwt_token(channel.clone(), secret.clone()).await {
                         Ok(value) => {
                             let token = updating_token.clone();
-                            *token.lock().unwrap() = value;
+                            *token.write().unwrap() = value;
 
                             break;
                         }
@@ -202,7 +202,7 @@ impl FinamSdkInterceptor {
     fn get_jwt_token(&self) -> Result<String, tonic::Status> {
         Ok(self
             .jwt_token
-            .lock()
+            .read()
             .map_err(|_| tonic::Status::internal("Can't lock JWT token mutex"))?
             .clone())
     }
