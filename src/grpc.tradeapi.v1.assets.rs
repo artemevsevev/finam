@@ -227,12 +227,12 @@ pub struct Option {
     pub contract_size: ::core::option::Option<
         super::super::super::super::google::r#type::Decimal,
     >,
-    /// Дата начала торговли
+    /// Дата старта торговли
     #[prost(message, optional, tag = "5")]
     pub trade_first_day: ::core::option::Option<
         super::super::super::super::google::r#type::Date,
     >,
-    /// Дата экспирации
+    /// Дата окончания торговли
     #[prost(message, optional, tag = "6")]
     pub trade_last_day: ::core::option::Option<
         super::super::super::super::google::r#type::Date,
@@ -246,6 +246,16 @@ pub struct Option {
     #[prost(message, optional, tag = "9")]
     pub multiplier: ::core::option::Option<
         super::super::super::super::google::r#type::Decimal,
+    >,
+    /// Дата начала экспирации
+    #[prost(message, optional, tag = "10")]
+    pub expiration_first_day: ::core::option::Option<
+        super::super::super::super::google::r#type::Date,
+    >,
+    /// Дата окончания экспирации
+    #[prost(message, optional, tag = "11")]
+    pub expiration_last_day: ::core::option::Option<
+        super::super::super::super::google::r#type::Date,
     >,
 }
 /// Nested message and enum types in `Option`.

@@ -56,4 +56,7 @@ pub struct AccountTrade {
     /// Идентификатор заявки
     #[prost(string, tag = "7")]
     pub order_id: ::prost::alloc::string::String,
+    /// Идентификатор аккаунта
+    #[prost(string, tag = "8")]
+    pub account_id: ::prost::alloc::string::String,
 }
