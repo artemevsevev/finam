@@ -31,10 +31,63 @@ pub struct GetAccountResponse {
     /// Позиции. Открытые, плюс теоретические (по неисполненным активным заявкам)
     #[prost(message, repeated, tag = "6")]
     pub positions: ::prost::alloc::vec::Vec<Position>,
-    /// Доступные средства
+    /// Сумма собственных денежных средств на счете, доступная для торговли. Не включает маржинальные средства.
     #[prost(message, repeated, tag = "7")]
     pub cash: ::prost::alloc::vec::Vec<
         super::super::super::super::google::r#type::Money,
+    >,
+    #[prost(oneof = "get_account_response::Portfolio", tags = "8, 9, 10")]
+    pub portfolio: ::core::option::Option<get_account_response::Portfolio>,
+}
+/// Nested message and enum types in `GetAccountResponse`.
+pub mod get_account_response {
+    #[derive(Clone, PartialEq, Eq, Hash, ::prost::Oneof)]
+    pub enum Portfolio {
+        #[prost(message, tag = "8")]
+        PortfolioMc(super::Mc),
+        #[prost(message, tag = "9")]
+        PortfolioMct(super::Mct),
+        #[prost(message, tag = "10")]
+        PortfolioForts(super::Forts),
+    }
+}
+/// Общий тип для счетов Московской Биржи. Включает в себя как единые, так и специализированные (моно) счета для разных секций биржи.
+///
+/// * Единый торговый счет (ЕТС): Позволяет торговать на нескольких рынках (фондовый, валютный. срочный, spb, иностранные бумаги, иностранные фьючерсы) с единой денежной позиции.
+/// * Моно-счет фондового рынка MOEX: Изолированный счет для торговли акциями, облигациями и паями.
+/// * Моно-счет валютного рынка MOEX: Изолированный счет для операций с валютными парами (например, CNYRUB_TOM).
+#[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
+pub struct Mc {
+    /// Сумма собственных денежных средств на счете, доступная для торговли. Включает маржинальные средства.
+    #[prost(message, optional, tag = "1")]
+    pub available_cash: ::core::option::Option<
+        super::super::super::super::google::r#type::Decimal,
+    >,
+    #[prost(message, optional, tag = "2")]
+    pub initial_margin: ::core::option::Option<
+        super::super::super::super::google::r#type::Decimal,
+    >,
+    #[prost(message, optional, tag = "3")]
+    pub maintenance_margin: ::core::option::Option<
+        super::super::super::super::google::r#type::Decimal,
+    >,
+}
+/// Тип портфеля для счетов на американских рынках.
+/// Предоставляет доступ к биржам США: NYSE, NASDAQ, CBOE, CME, сделки с американскими акциями, фьючерсами и опционами.
+#[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
+pub struct Mct {}
+/// Тип портфеля для торговли на срочном рынке Московской Биржи.
+/// Предназначен для работы с производными финансовыми инструментами: фьючерсами и опционами.
+#[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
+pub struct Forts {
+    /// Сумма собственных денежных средств на счете, доступная для торговли. Включает маржинальные средства.
+    #[prost(message, optional, tag = "1")]
+    pub available_cash: ::core::option::Option<
+        super::super::super::super::google::r#type::Decimal,
+    >,
+    #[prost(message, optional, tag = "2")]
+    pub money_reserved: ::core::option::Option<
+        super::super::super::super::google::r#type::Decimal,
     >,
 }
 /// Запрос получения истории по сделкам
@@ -92,7 +145,7 @@ pub struct Position {
     pub quantity: ::core::option::Option<
         super::super::super::super::google::r#type::Decimal,
     >,
-    /// Средняя цена
+    /// Средняя цена. Не заполняется для FORTS позиций
     #[prost(message, optional, tag = "3")]
     pub average_price: ::core::option::Option<
         super::super::super::super::google::r#type::Decimal,
@@ -100,6 +153,21 @@ pub struct Position {
     /// Текущая цена
     #[prost(message, optional, tag = "4")]
     pub current_price: ::core::option::Option<
+        super::super::super::super::google::r#type::Decimal,
+    >,
+    /// Поддерживающее гарантийное обеспечение. Заполняется только для FORTS позиций
+    #[prost(message, optional, tag = "5")]
+    pub maintenance_margin: ::core::option::Option<
+        super::super::super::super::google::r#type::Decimal,
+    >,
+    /// Прибыль за текущий день. Не заполняется для FORTS позиций
+    #[prost(message, optional, tag = "6")]
+    pub daily_pnl: ::core::option::Option<
+        super::super::super::super::google::r#type::Decimal,
+    >,
+    /// Нереализованная прибыль текущей позиции
+    #[prost(message, optional, tag = "7")]
+    pub unrealized_pnl: ::core::option::Option<
         super::super::super::super::google::r#type::Decimal,
     >,
 }
@@ -110,6 +178,7 @@ pub struct Transaction {
     #[prost(string, tag = "1")]
     pub id: ::prost::alloc::string::String,
     /// Тип транзакции из TransactionCategory
+    #[deprecated]
     #[prost(string, tag = "2")]
     pub category: ::prost::alloc::string::String,
     /// Метка времени
@@ -126,6 +195,12 @@ pub struct Transaction {
     /// Информация о сделке
     #[prost(message, optional, tag = "7")]
     pub trade: ::core::option::Option<transaction::Trade>,
+    /// Категория транзакции из TransactionCategory.
+    #[prost(enumeration = "transaction::TransactionCategory", tag = "8")]
+    pub transaction_category: i32,
+    /// Наименование транзакции
+    #[prost(string, tag = "9")]
+    pub transaction_name: ::prost::alloc::string::String,
 }
 /// Nested message and enum types in `Transaction`.
 pub mod transaction {
@@ -147,6 +222,85 @@ pub mod transaction {
         pub accrued_interest: ::core::option::Option<
             super::super::super::super::super::google::r#type::Decimal,
         >,
+    }
+    /// Категории транзакции.
+    #[derive(
+        Clone,
+        Copy,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
+        PartialOrd,
+        Ord,
+        ::prost::Enumeration
+    )]
+    #[repr(i32)]
+    pub enum TransactionCategory {
+        /// Прочее
+        Others = 0,
+        /// Ввод ДС
+        Deposit = 1,
+        /// Вывод ДС
+        Withdraw = 2,
+        /// Доход
+        Income = 5,
+        /// Комиссии
+        Commission = 7,
+        /// Налог
+        Tax = 8,
+        /// Наследство
+        Inheritance = 9,
+        /// Перевод ДС
+        Transfer = 11,
+        /// Расторжение договора
+        ContractTermination = 12,
+        /// Расходы
+        Outcomes = 13,
+        /// Штраф
+        Fine = 15,
+        /// Займ
+        Loan = 19,
+    }
+    impl TransactionCategory {
+        /// String value of the enum field names used in the ProtoBuf definition.
+        ///
+        /// The values are not transformed in any way and thus are considered stable
+        /// (if the ProtoBuf definition does not change) and safe for programmatic use.
+        pub fn as_str_name(&self) -> &'static str {
+            match self {
+                Self::Others => "OTHERS",
+                Self::Deposit => "DEPOSIT",
+                Self::Withdraw => "WITHDRAW",
+                Self::Income => "INCOME",
+                Self::Commission => "COMMISSION",
+                Self::Tax => "TAX",
+                Self::Inheritance => "INHERITANCE",
+                Self::Transfer => "TRANSFER",
+                Self::ContractTermination => "CONTRACT_TERMINATION",
+                Self::Outcomes => "OUTCOMES",
+                Self::Fine => "FINE",
+                Self::Loan => "LOAN",
+            }
+        }
+        /// Creates an enum from field names used in the ProtoBuf definition.
+        pub fn from_str_name(value: &str) -> ::core::option::Option<Self> {
+            match value {
+                "OTHERS" => Some(Self::Others),
+                "DEPOSIT" => Some(Self::Deposit),
+                "WITHDRAW" => Some(Self::Withdraw),
+                "INCOME" => Some(Self::Income),
+                "COMMISSION" => Some(Self::Commission),
+                "TAX" => Some(Self::Tax),
+                "INHERITANCE" => Some(Self::Inheritance),
+                "TRANSFER" => Some(Self::Transfer),
+                "CONTRACT_TERMINATION" => Some(Self::ContractTermination),
+                "OUTCOMES" => Some(Self::Outcomes),
+                "FINE" => Some(Self::Fine),
+                "LOAN" => Some(Self::Loan),
+                _ => None,
+            }
+        }
     }
 }
 /// Generated client implementations.
