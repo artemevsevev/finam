@@ -203,7 +203,7 @@ impl FinamSdkInterceptor {
         Ok(self
             .jwt_token
             .read()
-            .map_err(|_| tonic::Status::internal("Can't lock JWT token mutex"))?
+            .map_err(|_| tonic::Status::internal("Can't read JWT token"))?
             .clone())
     }
 }
