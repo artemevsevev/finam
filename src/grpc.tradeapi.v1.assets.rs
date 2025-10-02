@@ -104,6 +104,7 @@ pub struct GetAssetParamsResponse {
         super::super::super::super::google::r#type::Decimal,
     >,
     /// Сумма обеспечения для поддержания позиции Лонг
+    #[deprecated]
     #[prost(message, optional, tag = "7")]
     pub long_collateral: ::core::option::Option<
         super::super::super::super::google::r#type::Money,
@@ -114,8 +115,19 @@ pub struct GetAssetParamsResponse {
         super::super::super::super::google::r#type::Decimal,
     >,
     /// Сумма обеспечения для поддержания позиции Шорт
+    #[deprecated]
     #[prost(message, optional, tag = "9")]
     pub short_collateral: ::core::option::Option<
+        super::super::super::super::google::r#type::Money,
+    >,
+    /// Начальные требования, сколько на счету должно быть свободных денежных средств, чтобы открыть лонг позицию, для FORTS счетов равен биржевому ГО
+    #[prost(message, optional, tag = "10")]
+    pub long_initial_margin: ::core::option::Option<
+        super::super::super::super::google::r#type::Money,
+    >,
+    /// Начальные требования, сколько на счету должно быть свободных денежных средств, чтобы открыть шорт позицию, для FORTS счетов равен биржевому ГО
+    #[prost(message, optional, tag = "11")]
+    pub short_initial_margin: ::core::option::Option<
         super::super::super::super::google::r#type::Money,
     >,
 }

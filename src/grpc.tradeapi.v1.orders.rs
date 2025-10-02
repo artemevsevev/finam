@@ -159,6 +159,9 @@ pub struct Order {
     /// Уникальный идентификатор заявки. Автоматически генерируется, если не отправлен. (максимум 20 символов)
     #[prost(string, tag = "11")]
     pub client_order_id: ::prost::alloc::string::String,
+    /// Срок действия условной заявки. Заполняется для заявок с типом ORDER_TYPE_STOP, ORDER_TYPE_STOP_LIMIT
+    #[prost(enumeration = "ValidBefore", tag = "12")]
+    pub valid_before: i32,
 }
 /// Лег
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
@@ -492,6 +495,43 @@ impl OrderStatus {
             "ORDER_STATUS_TP_CORRECTION" => Some(Self::TpCorrection),
             "ORDER_STATUS_TP_FORWARDING" => Some(Self::TpForwarding),
             "ORDER_STATUS_TP_CORR_GUARD_TIME" => Some(Self::TpCorrGuardTime),
+            _ => None,
+        }
+    }
+}
+/// Срок действия условной заявки
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
+#[repr(i32)]
+pub enum ValidBefore {
+    /// Значение не указано
+    Unspecified = 0,
+    /// До конца торгового дня
+    EndOfDay = 1,
+    /// До отмены
+    GoodTillCancel = 2,
+    /// До указанной даты-времени. Данный тип на текущий момент не поддерживается при выставлении заявки
+    GoodTillDate = 3,
+}
+impl ValidBefore {
+    /// String value of the enum field names used in the ProtoBuf definition.
+    ///
+    /// The values are not transformed in any way and thus are considered stable
+    /// (if the ProtoBuf definition does not change) and safe for programmatic use.
+    pub fn as_str_name(&self) -> &'static str {
+        match self {
+            Self::Unspecified => "VALID_BEFORE_UNSPECIFIED",
+            Self::EndOfDay => "VALID_BEFORE_END_OF_DAY",
+            Self::GoodTillCancel => "VALID_BEFORE_GOOD_TILL_CANCEL",
+            Self::GoodTillDate => "VALID_BEFORE_GOOD_TILL_DATE",
+        }
+    }
+    /// Creates an enum from field names used in the ProtoBuf definition.
+    pub fn from_str_name(value: &str) -> ::core::option::Option<Self> {
+        match value {
+            "VALID_BEFORE_UNSPECIFIED" => Some(Self::Unspecified),
+            "VALID_BEFORE_END_OF_DAY" => Some(Self::EndOfDay),
+            "VALID_BEFORE_GOOD_TILL_CANCEL" => Some(Self::GoodTillCancel),
+            "VALID_BEFORE_GOOD_TILL_DATE" => Some(Self::GoodTillDate),
             _ => None,
         }
     }

@@ -43,19 +43,21 @@ pub struct GetAccountResponse {
 pub mod get_account_response {
     #[derive(Clone, PartialEq, Eq, Hash, ::prost::Oneof)]
     pub enum Portfolio {
+        /// Общий тип для счетов Московской Биржи. Включает в себя как единые, так и моно счета.
         #[prost(message, tag = "8")]
         PortfolioMc(super::Mc),
+        /// Тип портфеля для счетов на американских рынках.
         #[prost(message, tag = "9")]
         PortfolioMct(super::Mct),
+        /// Тип портфеля для торговли на срочном рынке Московской Биржи.
         #[prost(message, tag = "10")]
         PortfolioForts(super::Forts),
     }
 }
 /// Общий тип для счетов Московской Биржи. Включает в себя как единые, так и специализированные (моно) счета для разных секций биржи.
-///
-/// * Единый торговый счет (ЕТС): Позволяет торговать на нескольких рынках (фондовый, валютный. срочный, spb, иностранные бумаги, иностранные фьючерсы) с единой денежной позиции.
-/// * Моно-счет фондового рынка MOEX: Изолированный счет для торговли акциями, облигациями и паями.
-/// * Моно-счет валютного рынка MOEX: Изолированный счет для операций с валютными парами (например, CNYRUB_TOM).
+/// Единый торговый счет (ЕТС): Позволяет торговать на нескольких рынках (фондовый, валютный. срочный, spb, иностранные бумаги, иностранные фьючерсы) с единой денежной позиции.
+/// Моно-счет фондового рынка MOEX: Изолированный счет для торговли акциями, облигациями и паями.
+/// Моно-счет валютного рынка MOEX: Изолированный счет для операций с валютными парами (например, CNYRUB_TOM).
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct Mc {
     /// Сумма собственных денежных средств на счете, доступная для торговли. Включает маржинальные средства.
@@ -63,10 +65,12 @@ pub struct Mc {
     pub available_cash: ::core::option::Option<
         super::super::super::super::google::r#type::Decimal,
     >,
+    /// Начальная маржа
     #[prost(message, optional, tag = "2")]
     pub initial_margin: ::core::option::Option<
         super::super::super::super::google::r#type::Decimal,
     >,
+    /// Минимальная маржа
     #[prost(message, optional, tag = "3")]
     pub maintenance_margin: ::core::option::Option<
         super::super::super::super::google::r#type::Decimal,
@@ -85,6 +89,7 @@ pub struct Forts {
     pub available_cash: ::core::option::Option<
         super::super::super::super::google::r#type::Decimal,
     >,
+    /// Минимальная маржа (необходимая сумма обеспечения под открытые позици)
     #[prost(message, optional, tag = "2")]
     pub money_reserved: ::core::option::Option<
         super::super::super::super::google::r#type::Decimal,
@@ -160,12 +165,12 @@ pub struct Position {
     pub maintenance_margin: ::core::option::Option<
         super::super::super::super::google::r#type::Decimal,
     >,
-    /// Прибыль за текущий день. Не заполняется для FORTS позиций
+    /// Прибыль или убыток за текущий день (PnL). Не заполняется для FORTS позиций
     #[prost(message, optional, tag = "6")]
     pub daily_pnl: ::core::option::Option<
         super::super::super::super::google::r#type::Decimal,
     >,
-    /// Нереализованная прибыль текущей позиции
+    /// Суммарная нереализованная прибыль или убыток (PnL) текущей позиции
     #[prost(message, optional, tag = "7")]
     pub unrealized_pnl: ::core::option::Option<
         super::super::super::super::google::r#type::Decimal,
@@ -245,7 +250,7 @@ pub mod transaction {
         Withdraw = 2,
         /// Доход
         Income = 5,
-        /// Комиссии
+        /// Комиссия
         Commission = 7,
         /// Налог
         Tax = 8,

@@ -35,6 +35,9 @@ pub struct TokenDetailsResponse {
     /// Идентификаторы аккаунтов
     #[prost(string, repeated, tag = "4")]
     pub account_ids: ::prost::alloc::vec::Vec<::prost::alloc::string::String>,
+    /// Сессия и торговые счета в токене будут помечены readonly
+    #[prost(bool, tag = "5")]
+    pub readonly: bool,
 }
 /// Информация о доступе к рыночным данным
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
@@ -120,6 +123,20 @@ pub mod md_permission {
         #[prost(bool, tag = "6")]
         Worldwide(bool),
     }
+}
+/// Запрос подписки на обновление JWT токена
+#[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
+pub struct SubscribeJwtRenewalRequest {
+    /// API токен (secret key)
+    #[prost(string, tag = "1")]
+    pub secret: ::prost::alloc::string::String,
+}
+/// Обновленный токен. Стрим
+#[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
+pub struct SubscribeJwtRenewalResponse {
+    /// Полученный JWT-токен
+    #[prost(string, tag = "1")]
+    pub token: ::prost::alloc::string::String,
 }
 /// Generated client implementations.
 pub mod auth_service_client {
@@ -280,6 +297,36 @@ pub mod auth_service_client {
                     GrpcMethod::new("grpc.tradeapi.v1.auth.AuthService", "TokenDetails"),
                 );
             self.inner.unary(req, path, codec).await
+        }
+        /// Подписка на обновление JWT токена. Стрим метод
+        pub async fn subscribe_jwt_renewal(
+            &mut self,
+            request: impl tonic::IntoRequest<super::SubscribeJwtRenewalRequest>,
+        ) -> std::result::Result<
+            tonic::Response<tonic::codec::Streaming<super::SubscribeJwtRenewalResponse>>,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::unknown(
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic_prost::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/grpc.tradeapi.v1.auth.AuthService/SubscribeJwtRenewal",
+            );
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(
+                    GrpcMethod::new(
+                        "grpc.tradeapi.v1.auth.AuthService",
+                        "SubscribeJwtRenewal",
+                    ),
+                );
+            self.inner.server_streaming(req, path, codec).await
         }
     }
 }
