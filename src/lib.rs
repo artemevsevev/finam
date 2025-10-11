@@ -33,7 +33,7 @@ pub type FinamOrdersServiceClient =
 /// Предоставляет доступ к различным сервисам API Финам через gRPC.
 /// Включает в себя клиенты для работы со счетами, активами, аутентификацией,
 /// рыночными данными и ордерами.
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct FinamSdk {
     accounts: FinamAccountsServiceClient,
     assets: FinamAssetsServiceClient,
@@ -176,22 +176,28 @@ impl FinamSdkInterceptor {
 
                 loop {
                     match generate_jwt_token(channel.clone(), secret.clone()).await {
-                        Ok(value) => {
-                            let token = updating_token.clone();
-                            *token.write().unwrap() = value;
-
-                            break;
-                        }
+                        Ok(value) => match updating_token.write() {
+                            Ok(mut token_guard) => {
+                                *token_guard = value;
+                                break;
+                            }
+                            Err(error) => {
+                                log::error!(
+                                    "Failed to generate JWT token. Waiting for 5 seconds... {:?}",
+                                    error
+                                );
+                            }
+                        },
 
                         Err(error) => {
                             log::error!(
                                 "Failed to generate JWT token. Waiting for 5 seconds... {:?}",
                                 error
                             );
-
-                            tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
                         }
                     };
+
+                    tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
                 }
             }
         });
