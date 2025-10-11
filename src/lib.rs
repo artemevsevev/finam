@@ -17,6 +17,17 @@ use crate::proto::grpc::tradeapi::v1::{
 
 pub mod proto;
 
+pub type FinamAccountsServiceClient =
+    AccountsServiceClient<InterceptedService<Channel, FinamSdkInterceptor>>;
+pub type FinamAssetsServiceClient =
+    AssetsServiceClient<InterceptedService<Channel, FinamSdkInterceptor>>;
+pub type FinamAuthServiceClient =
+    AuthServiceClient<InterceptedService<Channel, FinamSdkInterceptor>>;
+pub type FinamMarketDataServiceClient =
+    MarketDataServiceClient<InterceptedService<Channel, FinamSdkInterceptor>>;
+pub type FinamOrdersServiceClient =
+    OrdersServiceClient<InterceptedService<Channel, FinamSdkInterceptor>>;
+
 /// Основной клиент SDK для работы с API Финам.
 ///
 /// Предоставляет доступ к различным сервисам API Финам через gRPC.
@@ -24,11 +35,11 @@ pub mod proto;
 /// рыночными данными и ордерами.
 #[derive(Clone)]
 pub struct FinamSdk {
-    accounts: AccountsServiceClient<InterceptedService<Channel, FinamSdkInterceptor>>,
-    assets: AssetsServiceClient<InterceptedService<Channel, FinamSdkInterceptor>>,
-    auth: AuthServiceClient<InterceptedService<Channel, FinamSdkInterceptor>>,
-    market_data: MarketDataServiceClient<InterceptedService<Channel, FinamSdkInterceptor>>,
-    orders: OrdersServiceClient<InterceptedService<Channel, FinamSdkInterceptor>>,
+    accounts: FinamAccountsServiceClient,
+    assets: FinamAssetsServiceClient,
+    auth: FinamAuthServiceClient,
+    market_data: FinamMarketDataServiceClient,
+    orders: FinamOrdersServiceClient,
 }
 
 impl FinamSdk {
@@ -76,9 +87,7 @@ impl FinamSdk {
     /// # Возвращает
     ///
     /// * Клиент `AccountsServiceClient` для взаимодействия с API счетов Финам.
-    pub fn accounts(
-        &self,
-    ) -> AccountsServiceClient<InterceptedService<Channel, FinamSdkInterceptor>> {
+    pub fn accounts(&self) -> FinamAccountsServiceClient {
         self.accounts.clone()
     }
 
@@ -90,7 +99,7 @@ impl FinamSdk {
     /// # Возвращает
     ///
     /// * Клиент `AssetsServiceClient` для взаимодействия с API активов Финам.
-    pub fn assets(&self) -> AssetsServiceClient<InterceptedService<Channel, FinamSdkInterceptor>> {
+    pub fn assets(&self) -> FinamAssetsServiceClient {
         self.assets.clone()
     }
 
@@ -102,7 +111,7 @@ impl FinamSdk {
     /// # Возвращает
     ///
     /// * Клиент `AuthServiceClient` для взаимодействия с API аутентификации Финам.
-    pub fn auth(&self) -> AuthServiceClient<InterceptedService<Channel, FinamSdkInterceptor>> {
+    pub fn auth(&self) -> FinamAuthServiceClient {
         self.auth.clone()
     }
 
@@ -114,9 +123,7 @@ impl FinamSdk {
     /// # Возвращает
     ///
     /// * Клиент `MarketDataServiceClient` для взаимодействия с API рыночных данных Финам.
-    pub fn market_data(
-        &self,
-    ) -> MarketDataServiceClient<InterceptedService<Channel, FinamSdkInterceptor>> {
+    pub fn market_data(&self) -> FinamMarketDataServiceClient {
         self.market_data.clone()
     }
 
@@ -128,7 +135,7 @@ impl FinamSdk {
     /// # Возвращает
     ///
     /// * Клиент `OrdersServiceClient` для взаимодействия с API ордеров Финам.
-    pub fn orders(&self) -> OrdersServiceClient<InterceptedService<Channel, FinamSdkInterceptor>> {
+    pub fn orders(&self) -> FinamOrdersServiceClient {
         self.orders.clone()
     }
 }
