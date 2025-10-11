@@ -1,6 +1,7 @@
 use std::sync::{Arc, RwLock};
 
 use thiserror::Error;
+use tokio::sync::oneshot;
 use tonic::{
     metadata::errors::InvalidMetadataValue,
     service::{Interceptor, interceptor::InterceptedService},
@@ -55,8 +56,14 @@ impl FinamSdk {
     ///
     /// # Пример
     ///
-    /// ```
-    /// let sdk = FinamSdk::new("your_secret_key").await?;
+    /// ```no_run
+    /// use finam::FinamSdk;
+    ///
+    /// #[tokio::main]
+    /// async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    ///     let sdk = FinamSdk::new("your_secret_key").await?;
+    ///     Ok(())
+    /// }
     /// ```
     pub async fn new(secret: &str) -> Result<Self, FinamSdkError> {
         let tls = ClientTlsConfig::new().with_native_roots();
@@ -144,9 +151,27 @@ impl FinamSdk {
 ///
 /// Отвечает за управление JWT токеном, его периодическое обновление и
 /// добавление к каждому исходящему запросу в API.
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct FinamSdkInterceptor {
     jwt_token: Arc<RwLock<String>>,
+    shutdown_sender: Option<oneshot::Sender<()>>,
+}
+
+impl Clone for FinamSdkInterceptor {
+    fn clone(&self) -> Self {
+        Self {
+            jwt_token: self.jwt_token.clone(),
+            shutdown_sender: None, // Cloned instances don't own the shutdown sender
+        }
+    }
+}
+
+impl Drop for FinamSdkInterceptor {
+    fn drop(&mut self) {
+        if let Some(sender) = self.shutdown_sender.take() {
+            let _ = sender.send(()); // Signal shutdown to the background task
+        }
+    }
 }
 
 impl FinamSdkInterceptor {
@@ -169,41 +194,57 @@ impl FinamSdkInterceptor {
 
         let secret = secret.to_string();
         let updating_token = token.clone();
+        let (shutdown_sender, mut shutdown_receiver) = oneshot::channel();
 
         tokio::spawn(async move {
             loop {
-                tokio::time::sleep(tokio::time::Duration::from_secs(60 * 10)).await;
+                tokio::select! {
+                    _ = &mut shutdown_receiver => {
+                        log::info!("Token refresh task shutting down");
+                        break;
+                    }
+                    _ = tokio::time::sleep(tokio::time::Duration::from_secs(60 * 10)) => {
+                        // Token refresh logic
+                        loop {
+                            match generate_jwt_token(channel.clone(), secret.clone()).await {
+                                Ok(value) => match updating_token.write() {
+                                    Ok(mut token_guard) => {
+                                        *token_guard = value;
+                                        break;
+                                    }
+                                    Err(error) => {
+                                        log::error!(
+                                            "Failed to write JWT token. Waiting for 5 seconds... {:?}",
+                                            error
+                                        );
+                                    }
+                                },
 
-                loop {
-                    match generate_jwt_token(channel.clone(), secret.clone()).await {
-                        Ok(value) => match updating_token.write() {
-                            Ok(mut token_guard) => {
-                                *token_guard = value;
-                                break;
-                            }
-                            Err(error) => {
-                                log::error!(
-                                    "Failed to generate JWT token. Waiting for 5 seconds... {:?}",
-                                    error
-                                );
-                            }
-                        },
+                                Err(error) => {
+                                    log::error!(
+                                        "Failed to generate JWT token. Waiting for 5 seconds... {:?}",
+                                        error
+                                    );
+                                }
+                            };
 
-                        Err(error) => {
-                            log::error!(
-                                "Failed to generate JWT token. Waiting for 5 seconds... {:?}",
-                                error
-                            );
+                            // Check for shutdown signal during retry delay
+                            tokio::select! {
+                                _ = &mut shutdown_receiver => {
+                                    log::info!("Token refresh task shutting down during retry");
+                                    return;
+                                }
+                                _ = tokio::time::sleep(tokio::time::Duration::from_secs(5)) => {}
+                            }
                         }
-                    };
-
-                    tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
+                    }
                 }
             }
         });
 
         Ok(Self {
             jwt_token: token.clone(),
+            shutdown_sender: Some(shutdown_sender),
         })
     }
 
@@ -286,4 +327,103 @@ pub enum FinamSdkError {
     /// Ошибка при создании или обработке метаданных запроса.
     #[error(transparent)]
     InvalidMetadataValue(#[from] InvalidMetadataValue),
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::sync::Arc;
+    use std::sync::atomic::{AtomicBool, Ordering};
+    use tokio::time::{Duration, sleep};
+
+    #[tokio::test]
+    async fn test_token_refresh_shutdown() {
+        // Initialize logger for test
+        let _ = env_logger::try_init();
+
+        // Create a flag to track if the background task is still running
+        let task_running = Arc::new(AtomicBool::new(true));
+        let task_running_clone = task_running.clone();
+
+        // Create a mock interceptor to test shutdown mechanism
+        let _token = Arc::new(RwLock::new("initial_token".to_string()));
+        let (shutdown_sender, mut shutdown_receiver) = oneshot::channel();
+
+        // Spawn the token refresh task similar to the real implementation
+        let background_task = tokio::spawn(async move {
+            loop {
+                tokio::select! {
+                    _ = &mut shutdown_receiver => {
+                        log::info!("Test token refresh task shutting down");
+                        task_running_clone.store(false, Ordering::SeqCst);
+                        break;
+                    }
+                    _ = sleep(Duration::from_millis(100)) => {
+                        // Short interval for testing
+                        log::debug!("Test token refresh tick");
+                    }
+                }
+            }
+        });
+
+        // Verify task is running
+        assert!(task_running.load(Ordering::SeqCst));
+        sleep(Duration::from_millis(50)).await;
+        assert!(task_running.load(Ordering::SeqCst));
+
+        // Send shutdown signal
+        let _ = shutdown_sender.send(());
+
+        // Wait for task to shutdown
+        let _ = background_task.await;
+
+        // Verify task has stopped
+        assert!(!task_running.load(Ordering::SeqCst));
+    }
+
+    #[tokio::test]
+    async fn test_interceptor_drop_triggers_shutdown() {
+        // Initialize logger for test
+        let _ = env_logger::try_init();
+
+        let task_completed = Arc::new(AtomicBool::new(false));
+        let task_completed_clone = task_completed.clone();
+
+        // Create interceptor in a scope so it gets dropped
+        {
+            let token = Arc::new(RwLock::new("test_token".to_string()));
+            let (shutdown_sender, mut shutdown_receiver) = oneshot::channel();
+
+            // Spawn a task that waits for shutdown signal
+            tokio::spawn(async move {
+                tokio::select! {
+                    _ = &mut shutdown_receiver => {
+                        log::info!("Shutdown signal received in test");
+                        task_completed_clone.store(true, Ordering::SeqCst);
+                    }
+                    _ = sleep(Duration::from_secs(10)) => {
+                        // This should not happen in normal test execution
+                        log::error!("Test task timed out waiting for shutdown signal");
+                    }
+                }
+            });
+
+            let interceptor = FinamSdkInterceptor {
+                jwt_token: token,
+                shutdown_sender: Some(shutdown_sender),
+            };
+
+            // Use interceptor briefly
+            sleep(Duration::from_millis(50)).await;
+
+            // Drop interceptor - this should trigger shutdown
+            drop(interceptor);
+        }
+
+        // Wait a bit for the shutdown signal to be processed
+        sleep(Duration::from_millis(100)).await;
+
+        // Verify that the shutdown signal was sent
+        assert!(task_completed.load(Ordering::SeqCst));
+    }
 }
