@@ -1,6 +1,6 @@
 # Finam API SDK
 
-Версия API: [2.8.0 (01.10.2025)](https://github.com/FinamWeb/finam-trade-api/releases/tag/Release-2.8.0)
+Версия API: [2.9.0 (03.12.2025)](https://github.com/FinamWeb/finam-trade-api/releases/tag/Release-2.9.0)
 
 Документация: [https://tradeapi.finam.ru/docs/about/](https://tradeapi.finam.ru/docs/about/)
 
