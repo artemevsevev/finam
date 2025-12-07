@@ -59,4 +59,7 @@ pub struct AccountTrade {
     /// Идентификатор аккаунта
     #[prost(string, tag = "8")]
     pub account_id: ::prost::alloc::string::String,
+    /// Метка заявки. (максимум 128 символов)
+    #[prost(string, tag = "9")]
+    pub comment: ::prost::alloc::string::String,
 }

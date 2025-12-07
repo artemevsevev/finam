@@ -107,6 +107,34 @@ pub struct OrderTradeResponse {
     #[prost(message, repeated, tag = "2")]
     pub trades: ::prost::alloc::vec::Vec<super::AccountTrade>,
 }
+/// Запрос подписки на собственные заявки. Стрим
+#[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
+pub struct SubscribeOrdersRequest {
+    /// Идентификатор аккаунта
+    #[prost(string, tag = "1")]
+    pub account_id: ::prost::alloc::string::String,
+}
+/// Список собственных заявок
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct SubscribeOrdersResponse {
+    /// Заявки
+    #[prost(message, repeated, tag = "1")]
+    pub orders: ::prost::alloc::vec::Vec<OrderState>,
+}
+/// Запрос подписки на собственные сделки. Стрим
+#[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
+pub struct SubscribeTradesRequest {
+    /// Идентификатор аккаунта
+    #[prost(string, tag = "1")]
+    pub account_id: ::prost::alloc::string::String,
+}
+/// Список собственных сделок
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct SubscribeTradesResponse {
+    /// Сделки
+    #[prost(message, repeated, tag = "1")]
+    pub trades: ::prost::alloc::vec::Vec<super::AccountTrade>,
+}
 /// Запрос на получение конкретного ордера
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct GetOrderRequest {
@@ -162,6 +190,9 @@ pub struct Order {
     /// Срок действия условной заявки. Заполняется для заявок с типом ORDER_TYPE_STOP, ORDER_TYPE_STOP_LIMIT
     #[prost(enumeration = "ValidBefore", tag = "12")]
     pub valid_before: i32,
+    /// Метка заявки. (максимум 128 символов)
+    #[prost(string, tag = "13")]
+    pub comment: ::prost::alloc::string::String,
 }
 /// Лег
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
@@ -759,6 +790,7 @@ pub mod orders_service_client {
             self.inner.unary(req, path, codec).await
         }
         /// Подписка на собственные заявки и сделки. Стрим метод
+        #[deprecated]
         pub async fn subscribe_order_trade(
             &mut self,
             request: impl tonic::IntoStreamingRequest<Message = super::OrderTradeRequest>,
@@ -787,6 +819,66 @@ pub mod orders_service_client {
                     ),
                 );
             self.inner.streaming(req, path, codec).await
+        }
+        /// Подписка на собственные заявки. Стрим метод
+        pub async fn subscribe_orders(
+            &mut self,
+            request: impl tonic::IntoRequest<super::SubscribeOrdersRequest>,
+        ) -> std::result::Result<
+            tonic::Response<tonic::codec::Streaming<super::SubscribeOrdersResponse>>,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::unknown(
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic_prost::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/grpc.tradeapi.v1.orders.OrdersService/SubscribeOrders",
+            );
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(
+                    GrpcMethod::new(
+                        "grpc.tradeapi.v1.orders.OrdersService",
+                        "SubscribeOrders",
+                    ),
+                );
+            self.inner.server_streaming(req, path, codec).await
+        }
+        /// Подписка на собственные сделки. Стрим метод
+        pub async fn subscribe_trades(
+            &mut self,
+            request: impl tonic::IntoRequest<super::SubscribeTradesRequest>,
+        ) -> std::result::Result<
+            tonic::Response<tonic::codec::Streaming<super::SubscribeTradesResponse>>,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::unknown(
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic_prost::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/grpc.tradeapi.v1.orders.OrdersService/SubscribeTrades",
+            );
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(
+                    GrpcMethod::new(
+                        "grpc.tradeapi.v1.orders.OrdersService",
+                        "SubscribeTrades",
+                    ),
+                );
+            self.inner.server_streaming(req, path, codec).await
         }
     }
 }
