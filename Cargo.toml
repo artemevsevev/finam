@@ -1,6 +1,6 @@
 [package]
 name = "finam"
-version = "0.6.0"
+version = "0.7.0"
 edition = "2024"
 authors = ["Artem Evsevev <artem@qrsoft.ru>"]
 description = "SDK для работы с API Финам"
