@@ -69,6 +69,9 @@ pub struct GetAssetResponse {
     pub expiration_date: ::core::option::Option<
         super::super::super::super::google::r#type::Date,
     >,
+    /// Валюта котировки, может не совпадать с валютой режима торгов инструмента
+    #[prost(string, tag = "13")]
+    pub quote_currency: ::prost::alloc::string::String,
 }
 /// Запрос торговых параметров инструмента
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
@@ -90,6 +93,9 @@ pub struct GetAssetParamsResponse {
     #[prost(string, tag = "2")]
     pub account_id: ::prost::alloc::string::String,
     /// Доступны ли торговые операции
+    /// Старое поле, помечено как устаревшее.
+    /// Клиентам следует перейти на is_tradeable.
+    #[deprecated]
     #[prost(bool, tag = "3")]
     pub tradeable: bool,
     /// Доступны ли операции в Лонг
@@ -130,6 +136,10 @@ pub struct GetAssetParamsResponse {
     pub short_initial_margin: ::core::option::Option<
         super::super::super::super::google::r#type::Money,
     >,
+    /// Доступны ли торговые операции
+    /// Новое поле. Позволяет различать false и "не установлено".
+    #[prost(message, optional, tag = "12")]
+    pub is_tradable: ::core::option::Option<bool>,
 }
 /// Запрос получения цепочки опционов
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
@@ -137,6 +147,16 @@ pub struct OptionsChainRequest {
     /// Символ базового актива опциона
     #[prost(string, tag = "1")]
     pub underlying_symbol: ::prost::alloc::string::String,
+    /// Опциональный параметр. Актуален для опционов на фьючерсы, по типу (недельные, месячные).
+    /// Если параметр не указан, будут возвращены опционы с ближайшей датой экспирации.
+    #[prost(string, tag = "2")]
+    pub root: ::prost::alloc::string::String,
+    /// Опциональный фильтр по дате экспирации опционов.
+    /// Если параметр не указан, будут возвращены опционы с ближайшей датой экспирации.
+    #[prost(message, optional, tag = "3")]
+    pub expiration_date: ::core::option::Option<
+        super::super::super::super::google::r#type::Date,
+    >,
 }
 /// Информация о цепочке опционов
 #[derive(Clone, PartialEq, ::prost::Message)]

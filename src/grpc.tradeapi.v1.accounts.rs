@@ -36,6 +36,15 @@ pub struct GetAccountResponse {
     pub cash: ::prost::alloc::vec::Vec<
         super::super::super::super::google::r#type::Money,
     >,
+    /// Дата открытия счета
+    #[prost(message, optional, tag = "11")]
+    pub open_account_date: ::core::option::Option<::prost_types::Timestamp>,
+    /// Дата первой торговой транзакции
+    #[prost(message, optional, tag = "12")]
+    pub first_trade_date: ::core::option::Option<::prost_types::Timestamp>,
+    /// Дата первой неторговой транзакции
+    #[prost(message, optional, tag = "13")]
+    pub first_non_trade_date: ::core::option::Option<::prost_types::Timestamp>,
     #[prost(oneof = "get_account_response::Portfolio", tags = "8, 9, 10")]
     pub portfolio: ::core::option::Option<get_account_response::Portfolio>,
 }
@@ -206,6 +215,11 @@ pub struct Transaction {
     /// Наименование транзакции
     #[prost(string, tag = "9")]
     pub transaction_name: ::prost::alloc::string::String,
+    /// Изменение в штуках, только для трансфера бумаг (для TransactionCategory = TRANSFER)
+    #[prost(message, optional, tag = "10")]
+    pub change_qty: ::core::option::Option<
+        super::super::super::super::google::r#type::Decimal,
+    >,
 }
 /// Nested message and enum types in `Transaction`.
 pub mod transaction {
