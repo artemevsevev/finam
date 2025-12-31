@@ -15,7 +15,7 @@ exclude = ["finam-trade-api/*", "googleapis/*"]
 log = "0.4.29"
 prost = "0.14.1"
 prost-types = "0.14.1"
-thiserror = "2.0.12"
+thiserror = "2.0.17"
 tokio = "1.48.0"
 tonic = { version = "0.14.2", features = [
     "tls-ring",
