@@ -151,7 +151,7 @@ impl FinamSdk {
 ///
 /// Отправляет сигнал завершения при уничтожении последней ссылки на интерцептор.
 struct ShutdownGuard {
-    sender: std::sync::Mutex<Option<oneshot::Sender<()>>>,
+    sender: Option<oneshot::Sender<()>>,
 }
 
 impl std::fmt::Debug for ShutdownGuard {
@@ -162,10 +162,8 @@ impl std::fmt::Debug for ShutdownGuard {
 
 impl Drop for ShutdownGuard {
     fn drop(&mut self) {
-        if let Ok(mut guard) = self.sender.lock() {
-            if let Some(sender) = guard.take() {
-                let _ = sender.send(()); // Signal shutdown to the background task
-            }
+        if let Some(sender) = self.sender.take() {
+            let _ = sender.send(()); // Signal shutdown to the background task
         }
     }
 }
@@ -254,7 +252,7 @@ impl FinamSdkInterceptor {
         Ok(Self {
             jwt_token: token,
             shutdown_guard: Arc::new(ShutdownGuard {
-                sender: std::sync::Mutex::new(Some(shutdown_sender)),
+                sender: Some(shutdown_sender),
             }),
         })
     }
@@ -422,7 +420,7 @@ mod tests {
             let interceptor = FinamSdkInterceptor {
                 jwt_token: token,
                 shutdown_guard: Arc::new(ShutdownGuard {
-                    sender: std::sync::Mutex::new(Some(shutdown_sender)),
+                    sender: Some(shutdown_sender),
                 }),
             };
 
