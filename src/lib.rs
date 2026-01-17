@@ -147,31 +147,38 @@ impl FinamSdk {
     }
 }
 
+/// Охранник для корректного завершения фонового потока обновления токена.
+///
+/// Отправляет сигнал завершения при уничтожении последней ссылки на интерцептор.
+struct ShutdownGuard {
+    sender: Option<oneshot::Sender<()>>,
+}
+
+impl std::fmt::Debug for ShutdownGuard {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("ShutdownGuard").finish_non_exhaustive()
+    }
+}
+
+impl Drop for ShutdownGuard {
+    fn drop(&mut self) {
+        if let Some(sender) = self.sender.take() {
+            let _ = sender.send(()); // Signal shutdown to the background task
+        }
+    }
+}
+
 /// Интерцептор для автоматического добавления JWT токена к запросам API Финам.
 ///
 /// Отвечает за управление JWT токеном, его периодическое обновление и
 /// добавление к каждому исходящему запросу в API.
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct FinamSdkInterceptor {
     jwt_token: Arc<RwLock<String>>,
-    shutdown_sender: Option<oneshot::Sender<()>>,
-}
-
-impl Clone for FinamSdkInterceptor {
-    fn clone(&self) -> Self {
-        Self {
-            jwt_token: self.jwt_token.clone(),
-            shutdown_sender: None, // Cloned instances don't own the shutdown sender
-        }
-    }
-}
-
-impl Drop for FinamSdkInterceptor {
-    fn drop(&mut self) {
-        if let Some(sender) = self.shutdown_sender.take() {
-            let _ = sender.send(()); // Signal shutdown to the background task
-        }
-    }
+    /// Удерживает фоновый поток обновления токена. При уничтожении последней
+    /// ссылки на интерцептор отправляет сигнал завершения.
+    #[allow(dead_code)]
+    shutdown_guard: Arc<ShutdownGuard>,
 }
 
 impl FinamSdkInterceptor {
@@ -243,8 +250,10 @@ impl FinamSdkInterceptor {
         });
 
         Ok(Self {
-            jwt_token: token.clone(),
-            shutdown_sender: Some(shutdown_sender),
+            jwt_token: token,
+            shutdown_guard: Arc::new(ShutdownGuard {
+                sender: Some(shutdown_sender),
+            }),
         })
     }
 
@@ -410,7 +419,9 @@ mod tests {
 
             let interceptor = FinamSdkInterceptor {
                 jwt_token: token,
-                shutdown_sender: Some(shutdown_sender),
+                shutdown_guard: Arc::new(ShutdownGuard {
+                    sender: Some(shutdown_sender),
+                }),
             };
 
             // Use interceptor briefly
