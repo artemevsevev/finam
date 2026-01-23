@@ -233,6 +233,21 @@ pub struct OrderState {
     /// Дата и время  отмены заявки
     #[prost(message, optional, tag = "7")]
     pub withdraw_at: ::core::option::Option<::prost_types::Timestamp>,
+    /// Начальный объем
+    #[prost(message, optional, tag = "8")]
+    pub initial_quantity: ::core::option::Option<
+        super::super::super::super::google::r#type::Decimal,
+    >,
+    /// Исполненный объем
+    #[prost(message, optional, tag = "9")]
+    pub executed_quantity: ::core::option::Option<
+        super::super::super::super::google::r#type::Decimal,
+    >,
+    /// Оставшийся объем
+    #[prost(message, optional, tag = "10")]
+    pub remaining_quantity: ::core::option::Option<
+        super::super::super::super::google::r#type::Decimal,
+    >,
 }
 /// Запрос получения списка торговых заявок
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
