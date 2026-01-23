@@ -140,6 +140,9 @@ pub struct GetAssetParamsResponse {
     /// Новое поле. Позволяет различать false и "не установлено".
     #[prost(message, optional, tag = "12")]
     pub is_tradable: ::core::option::Option<bool>,
+    /// Допустимая цена. Помогает определить можно ли выставлять ордера с отрицательной ценой для финансового инструмента
+    #[prost(enumeration = "PriceType", tag = "13")]
+    pub price_type: i32,
 }
 /// Запрос получения цепочки опционов
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
@@ -453,6 +456,43 @@ pub mod shortable {
                 "AVAILABLE_STRATEGY" => Some(Self::AvailableStrategy),
                 _ => None,
             }
+        }
+    }
+}
+/// Допустимая цена
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
+#[repr(i32)]
+pub enum PriceType {
+    /// Неизвестно
+    Unknown = 0,
+    /// Положительная. Больше нуля
+    Positive = 1,
+    /// Неотрицательная. Больше или равна нулю
+    NonNegative = 2,
+    /// Любая
+    Any = 3,
+}
+impl PriceType {
+    /// String value of the enum field names used in the ProtoBuf definition.
+    ///
+    /// The values are not transformed in any way and thus are considered stable
+    /// (if the ProtoBuf definition does not change) and safe for programmatic use.
+    pub fn as_str_name(&self) -> &'static str {
+        match self {
+            Self::Unknown => "UNKNOWN",
+            Self::Positive => "POSITIVE",
+            Self::NonNegative => "NON_NEGATIVE",
+            Self::Any => "ANY",
+        }
+    }
+    /// Creates an enum from field names used in the ProtoBuf definition.
+    pub fn from_str_name(value: &str) -> ::core::option::Option<Self> {
+        match value {
+            "UNKNOWN" => Some(Self::Unknown),
+            "POSITIVE" => Some(Self::Positive),
+            "NON_NEGATIVE" => Some(Self::NonNegative),
+            "ANY" => Some(Self::Any),
+            _ => None,
         }
     }
 }
