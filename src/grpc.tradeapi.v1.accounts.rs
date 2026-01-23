@@ -520,5 +520,35 @@ pub mod accounts_service_client {
                 );
             self.inner.unary(req, path, codec).await
         }
+        /// Подписка на информацию по аккаунту. Стрим метод
+        pub async fn subscribe_account(
+            &mut self,
+            request: impl tonic::IntoRequest<super::GetAccountRequest>,
+        ) -> std::result::Result<
+            tonic::Response<tonic::codec::Streaming<super::GetAccountResponse>>,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::unknown(
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic_prost::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/grpc.tradeapi.v1.accounts.AccountsService/SubscribeAccount",
+            );
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(
+                    GrpcMethod::new(
+                        "grpc.tradeapi.v1.accounts.AccountsService",
+                        "SubscribeAccount",
+                    ),
+                );
+            self.inner.server_streaming(req, path, codec).await
+        }
     }
 }
