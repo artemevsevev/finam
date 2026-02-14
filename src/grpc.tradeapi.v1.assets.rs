@@ -19,6 +19,35 @@ pub struct AssetsResponse {
     #[prost(message, repeated, tag = "1")]
     pub assets: ::prost::alloc::vec::Vec<Asset>,
 }
+/// Запрос получения списка доступных инструментов
+#[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
+pub struct AllAssetsRequest {
+    /// Курсор для пагинации. Указывает sec_id инструмента, с которого должен начинаться список.
+    /// Для первого запроса оставьте поле пустым (значение 0).
+    /// Для последующих запросов используйте значение next_cursor из предыдущего ответа.
+    #[prost(int64, tag = "1")]
+    pub cursor: i64,
+    /// Фильтрация по статусу инструмента: выбираются только активные(неархивные) инструменты
+    /// По умолчанию: false.
+    #[prost(bool, tag = "2")]
+    pub only_active: bool,
+    /// Фильтрация по статусу инструмента: выбираются только неактивные(архивные) инструменты
+    /// По умолчанию: false.
+    #[prost(bool, tag = "3")]
+    pub only_disabled: bool,
+}
+/// Ответ, содержащий часть доступных инструментов.
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct AllAssetsResponse {
+    /// Часть списка инструментов
+    #[prost(message, repeated, tag = "1")]
+    pub assets: ::prost::alloc::vec::Vec<Asset>,
+    /// Курсор для получения следующей страницы. Содержит sec_id последнего инструмента в текущем списке.
+    /// Передайте это значение в поле cursor следующего запроса, чтобы получить следующую часть данных.
+    /// Если значение 0 или отсутствует — это последняя страница.
+    #[prost(int64, tag = "2")]
+    pub next_cursor: i64,
+}
 /// Запрос получения информации по конкретному инструменту
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct GetAssetRequest {
@@ -247,6 +276,9 @@ pub struct Asset {
     /// Наименование инструмента
     #[prost(string, tag = "7")]
     pub name: ::prost::alloc::string::String,
+    /// Архивный инструмент или нет
+    #[prost(bool, tag = "8")]
+    pub is_archived: bool,
 }
 /// Информация об опционе
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
@@ -622,6 +654,7 @@ pub mod assets_service_client {
         /// Пример HTTP запроса:
         /// GET /v1/assets
         /// Authorization: <token>
+        #[deprecated]
         pub async fn assets(
             &mut self,
             request: impl tonic::IntoRequest<super::AssetsRequest>,
@@ -642,6 +675,36 @@ pub mod assets_service_client {
             req.extensions_mut()
                 .insert(
                     GrpcMethod::new("grpc.tradeapi.v1.assets.AssetsService", "Assets"),
+                );
+            self.inner.unary(req, path, codec).await
+        }
+        /// Получение списка всех инструментов, их описание
+        /// Пример HTTP запроса:
+        /// GET /v1/assets/all?cursor=56658&only_disabled=true
+        /// Authorization: <token>
+        pub async fn all_assets(
+            &mut self,
+            request: impl tonic::IntoRequest<super::AllAssetsRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::AllAssetsResponse>,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::unknown(
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic_prost::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/grpc.tradeapi.v1.assets.AssetsService/AllAssets",
+            );
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(
+                    GrpcMethod::new("grpc.tradeapi.v1.assets.AssetsService", "AllAssets"),
                 );
             self.inner.unary(req, path, codec).await
         }
