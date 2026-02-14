@@ -17,13 +17,13 @@ prost = "0.14.3"
 prost-types = "0.14.3"
 thiserror = "2.0.18"
 tokio = "1.49.0"
-tonic = { version = "0.14.2", features = [
+tonic = { version = "0.14.4", features = [
     "tls-ring",
     "tls-native-roots",
     "gzip",
 ] }
-tonic-prost = { version = "0.14.2" }
+tonic-prost = { version = "0.14.4" }
 
 [dev-dependencies]
-env_logger = "0.11.8"
+env_logger = "0.11.9"
 tokio = { version = "1.49.0", features = ["full"] }
