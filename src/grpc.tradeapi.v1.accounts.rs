@@ -98,7 +98,7 @@ pub struct Forts {
     pub available_cash: ::core::option::Option<
         super::super::super::super::google::r#type::Decimal,
     >,
-    /// Минимальная маржа (необходимая сумма обеспечения под открытые позици)
+    /// Минимальная маржа (необходимая сумма обеспечения под открытые позиции)
     #[prost(message, optional, tag = "2")]
     pub money_reserved: ::core::option::Option<
         super::super::super::super::google::r#type::Decimal,

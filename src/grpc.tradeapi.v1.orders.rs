@@ -233,21 +233,24 @@ pub struct OrderState {
     /// Дата и время  отмены заявки
     #[prost(message, optional, tag = "7")]
     pub withdraw_at: ::core::option::Option<::prost_types::Timestamp>,
-    /// Начальный объем
+    /// Начальный объем (заполняется только для биржевой заявки)
     #[prost(message, optional, tag = "8")]
     pub initial_quantity: ::core::option::Option<
         super::super::super::super::google::r#type::Decimal,
     >,
-    /// Исполненный объем
+    /// Исполненный объем (заполняется только для биржевой заявки)
     #[prost(message, optional, tag = "9")]
     pub executed_quantity: ::core::option::Option<
         super::super::super::super::google::r#type::Decimal,
     >,
-    /// Оставшийся объем
+    /// Оставшийся объем (заполняется только для биржевой заявки)
     #[prost(message, optional, tag = "10")]
     pub remaining_quantity: ::core::option::Option<
         super::super::super::super::google::r#type::Decimal,
     >,
+    /// Информация о SL/TP заявке
+    #[prost(message, optional, tag = "11")]
+    pub sltp_order: ::core::option::Option<SltpOrder>,
 }
 /// Запрос получения списка торговых заявок
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
@@ -272,6 +275,64 @@ pub struct CancelOrderRequest {
     /// Идентификатор заявки
     #[prost(string, tag = "2")]
     pub order_id: ::prost::alloc::string::String,
+}
+/// Информация о SL/TP заявке
+#[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
+pub struct SltpOrder {
+    /// Идентификатор аккаунта
+    #[prost(string, tag = "1")]
+    pub account_id: ::prost::alloc::string::String,
+    /// Символ инструмента
+    #[prost(string, tag = "2")]
+    pub symbol: ::prost::alloc::string::String,
+    /// Сторона для обеих заявок
+    #[prost(enumeration = "super::Side", tag = "3")]
+    pub side: i32,
+    /// Количество в шт для SL
+    #[prost(message, optional, tag = "4")]
+    pub quantity_sl: ::core::option::Option<
+        super::super::super::super::google::r#type::Decimal,
+    >,
+    /// Параметр условия цены для SL части
+    #[prost(message, optional, tag = "5")]
+    pub sl_price: ::core::option::Option<
+        super::super::super::super::google::r#type::Decimal,
+    >,
+    /// Если указано, после активации SL будет выставлена лимитная заявка с этой ценой
+    #[prost(message, optional, tag = "6")]
+    pub limit_price: ::core::option::Option<
+        super::super::super::super::google::r#type::Decimal,
+    >,
+    /// Количество в шт для TP
+    #[prost(message, optional, tag = "10")]
+    pub quantity_tp: ::core::option::Option<
+        super::super::super::super::google::r#type::Decimal,
+    >,
+    /// Параметр условия цены для TP части
+    #[prost(message, optional, tag = "11")]
+    pub tp_price: ::core::option::Option<
+        super::super::super::super::google::r#type::Decimal,
+    >,
+    /// Если указано, после активации TP будет выставлена лимитная заявка с учетом защитного спрэда
+    #[prost(message, optional, tag = "12")]
+    pub tp_guard_spread: ::core::option::Option<
+        super::super::super::super::google::r#type::Decimal,
+    >,
+    /// Единица измерения величины защитного спреда
+    #[prost(enumeration = "TpSpreadMeasure", tag = "13")]
+    pub tp_spread_measure: i32,
+    /// Уникальный идентификатор заявки. Автоматически генерируется, если не отправлен. (максимум 20 символов)
+    #[prost(string, tag = "20")]
+    pub client_order_id: ::prost::alloc::string::String,
+    /// Срок действия условной заявки. Если не заполнено, то по умолчанию выставляется VALID_BEFORE_GOOD_TILL_CANCEL
+    #[prost(enumeration = "ValidBefore", tag = "21")]
+    pub valid_before: i32,
+    /// Временная метка прекращения действия SL/TP заявки
+    #[prost(message, optional, tag = "22")]
+    pub valid_expiry_time: ::core::option::Option<::prost_types::Timestamp>,
+    /// Метка заявки. (максимум 128 символов)
+    #[prost(string, tag = "23")]
+    pub comment: ::prost::alloc::string::String,
 }
 /// Тип заявки
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
@@ -555,7 +616,7 @@ pub enum ValidBefore {
     EndOfDay = 1,
     /// До отмены
     GoodTillCancel = 2,
-    /// До указанной даты-времени. Данный тип на текущий момент не поддерживается при выставлении заявки
+    /// До указанной даты-времени. Данный тип поддерживается только при выставлении SL/TP заявок
     GoodTillDate = 3,
 }
 impl ValidBefore {
@@ -578,6 +639,39 @@ impl ValidBefore {
             "VALID_BEFORE_END_OF_DAY" => Some(Self::EndOfDay),
             "VALID_BEFORE_GOOD_TILL_CANCEL" => Some(Self::GoodTillCancel),
             "VALID_BEFORE_GOOD_TILL_DATE" => Some(Self::GoodTillDate),
+            _ => None,
+        }
+    }
+}
+/// Единица измерения величины защитного спреда для цены исполнения TP
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
+#[repr(i32)]
+pub enum TpSpreadMeasure {
+    /// Значение не указано
+    Undefined = 0,
+    /// в единицах цены
+    Value = 1,
+    /// в процентах, с максимальной точностью до сотых процента
+    Percent = 2,
+}
+impl TpSpreadMeasure {
+    /// String value of the enum field names used in the ProtoBuf definition.
+    ///
+    /// The values are not transformed in any way and thus are considered stable
+    /// (if the ProtoBuf definition does not change) and safe for programmatic use.
+    pub fn as_str_name(&self) -> &'static str {
+        match self {
+            Self::Undefined => "TP_SPREAD_MEASURE_UNDEFINED",
+            Self::Value => "TP_SPREAD_MEASURE_VALUE",
+            Self::Percent => "TP_SPREAD_MEASURE_PERCENT",
+        }
+    }
+    /// Creates an enum from field names used in the ProtoBuf definition.
+    pub fn from_str_name(value: &str) -> ::core::option::Option<Self> {
+        match value {
+            "TP_SPREAD_MEASURE_UNDEFINED" => Some(Self::Undefined),
+            "TP_SPREAD_MEASURE_VALUE" => Some(Self::Value),
+            "TP_SPREAD_MEASURE_PERCENT" => Some(Self::Percent),
             _ => None,
         }
     }
@@ -894,6 +988,65 @@ pub mod orders_service_client {
                     ),
                 );
             self.inner.server_streaming(req, path, codec).await
+        }
+        /// Выставление SL/TP заявки
+        /// Пример HTTP запроса:
+        /// POST /v1/accounts/A12345/sltp-orders
+        /// Content-Type: application/json
+        /// Authorization: <token>
+        ///
+        /// {
+        /// "symbol": "SBER@MISX",
+        /// "side": "SIDE_BUY",
+        /// "quantity_sl": {
+        /// "value": "10"
+        /// },
+        /// "sl_price": {
+        /// "value": "270.00"
+        /// },
+        /// "limit_price": {
+        /// "value": "269.50"
+        /// },
+        /// "quantity_tp": {
+        /// "value": "10"
+        /// },
+        /// "tp_price": {
+        /// "value": "295.50"
+        /// },
+        /// "tp_guard_spread": {
+        /// "value": "0.5"  },
+        /// "tp_spread_measure": "TP_SPREAD_MEASURE_VALUE",
+        /// "valid_before": "VALID_BEFORE_GOOD_TILL_DATE",
+        /// "valid_expiry_time": "2026-12-31T23:59:59Z",
+        /// "comment": "my SL/TP order"
+        /// }
+        ///
+        /// Поле account_id берется из URL-пути, остальные поля передаются в теле запроса
+        pub async fn place_sltp_order(
+            &mut self,
+            request: impl tonic::IntoRequest<super::SltpOrder>,
+        ) -> std::result::Result<tonic::Response<super::OrderState>, tonic::Status> {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::unknown(
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic_prost::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/grpc.tradeapi.v1.orders.OrdersService/PlaceSLTPOrder",
+            );
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(
+                    GrpcMethod::new(
+                        "grpc.tradeapi.v1.orders.OrdersService",
+                        "PlaceSLTPOrder",
+                    ),
+                );
+            self.inner.unary(req, path, codec).await
         }
     }
 }

@@ -539,7 +539,7 @@ pub mod assets_service_client {
     )]
     use tonic::codegen::*;
     use tonic::codegen::http::Uri;
-    /// Сервис счетов
+    /// Сервис инструментов
     #[derive(Debug, Clone)]
     pub struct AssetsServiceClient<T> {
         inner: tonic::client::Grpc<T>,
