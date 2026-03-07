@@ -1,8 +1,8 @@
 # Finam API SDK
 
-Версия API: [2.12.0 (11.02.2026)](https://github.com/FinamWeb/finam-trade-api/releases/tag/Release-2.12.0)
+Версия API: [2.13.0 (02.03.2026)](https://api.finam.ru/chanchelog/2-13-0/)
 
-Документация: [https://tradeapi.finam.ru/docs/about/](https://tradeapi.finam.ru/docs/about/)
+Документация: [https://api.finam.ru/getting-started/](https://api.finam.ru/getting-started/)
 
 ## Пример
 
