@@ -94,6 +94,7 @@ pub struct GetAssetResponse {
         super::super::super::super::google::r#type::Decimal,
     >,
     /// Дата экспирации фьючерса
+    #[deprecated]
     #[prost(message, optional, tag = "12")]
     pub expiration_date: ::core::option::Option<
         super::super::super::super::google::r#type::Date,
@@ -101,6 +102,64 @@ pub struct GetAssetResponse {
     /// Валюта котировки, может не совпадать с валютой режима торгов инструмента
     #[prost(string, tag = "13")]
     pub quote_currency: ::prost::alloc::string::String,
+    #[prost(oneof = "get_asset_response::AssetDetails", tags = "14, 15, 16")]
+    pub asset_details: ::core::option::Option<get_asset_response::AssetDetails>,
+}
+/// Nested message and enum types in `GetAssetResponse`.
+pub mod get_asset_response {
+    /// Специфичные параметры для инструмента типа "Фьючерс"
+    #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
+    pub struct FutureDetails {
+        /// Дата и время экспирации (исполнения) фьючерсного контракта.
+        #[prost(message, optional, tag = "1")]
+        pub expiration_date: ::core::option::Option<::prost_types::Timestamp>,
+        /// Размер контракта (мультипликатор) — количество единиц базового актива в одном контракте.
+        #[prost(message, optional, tag = "2")]
+        pub contract_size: ::core::option::Option<
+            super::super::super::super::super::google::r#type::Decimal,
+        >,
+    }
+    /// Специфичные параметры для инструмента типа "Опцион"
+    #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
+    pub struct OptionDetails {
+        /// Дата и время экспирации (исполнения) опционного контракта.
+        #[prost(message, optional, tag = "1")]
+        pub expiration_date: ::core::option::Option<::prost_types::Timestamp>,
+        /// Размер контракта (мультипликатор) — количество единиц базового актива в одном контракте.
+        #[prost(message, optional, tag = "2")]
+        pub contract_size: ::core::option::Option<
+            super::super::super::super::super::google::r#type::Decimal,
+        >,
+        /// Цена исполнения (страйк) опциона.
+        #[prost(message, optional, tag = "3")]
+        pub strike: ::core::option::Option<
+            super::super::super::super::super::google::r#type::Decimal,
+        >,
+    }
+    /// Специфичные параметры для инструмента типа "Облигация"
+    #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
+    pub struct BondDetails {
+        /// Текущая номинальная стоимость одной облигации.
+        #[prost(message, optional, tag = "1")]
+        pub bond_face_value: ::core::option::Option<
+            super::super::super::super::super::google::r#type::Decimal,
+        >,
+        /// Символьный код валюты номинала облигации (например, RUB, USD).
+        #[prost(string, tag = "2")]
+        pub currency: ::prost::alloc::string::String,
+    }
+    #[derive(Clone, PartialEq, Eq, Hash, ::prost::Oneof)]
+    pub enum AssetDetails {
+        /// Специфичные параметры для инструмента типа "Фьючерс"
+        #[prost(message, tag = "14")]
+        FutureDetails(FutureDetails),
+        /// Специфичные параметры для инструмента типа "Опцион"
+        #[prost(message, tag = "15")]
+        OptionDetails(OptionDetails),
+        /// Специфичные параметры для инструмента типа "Облигация"
+        #[prost(message, tag = "16")]
+        BondDetails(BondDetails),
+    }
 }
 /// Запрос торговых параметров инструмента
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
@@ -491,6 +550,49 @@ pub mod shortable {
         }
     }
 }
+/// Запрос на получение состава индекса
+#[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
+pub struct GetConstituentsRequest {
+    /// Символьный код индекса (например, "SPX@\_SP", "NDX@\_SCI")
+    #[prost(string, tag = "1")]
+    pub symbol: ::prost::alloc::string::String,
+    /// Курсор для пагинации. Указывает sec_id инструмента, с которого должен начинаться список.
+    /// Для первого запроса оставьте поле пустым (значение 0).
+    /// Для последующих запросов используйте значение next_cursor из предыдущего ответа.
+    #[prost(int64, tag = "2")]
+    pub cursor: i64,
+}
+/// Результат запроса состава индекса
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct GetConstituentsResponse {
+    /// Список компонентов (ценных бумаг), входящих в базу расчета запрошенного индекса
+    #[prost(message, repeated, tag = "1")]
+    pub constituents: ::prost::alloc::vec::Vec<Constituents>,
+    /// Курсор для получения следующей страницы. Содержит sec_id последнего инструмента в текущем списке.
+    /// Передайте это значение в поле cursor следующего запроса, чтобы получить следующую часть данных.
+    /// Если значение 0 или отсутствует — это последняя страница
+    #[prost(int64, tag = "2")]
+    pub next_cursor: i64,
+}
+/// Информация о компоненте (ценной бумаге), входящем в индекс
+#[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
+pub struct Constituents {
+    /// Символьный код инструмента
+    #[prost(string, tag = "1")]
+    pub symbol: ::prost::alloc::string::String,
+    /// Полное наименование компании-эмитента
+    #[prost(string, tag = "2")]
+    pub name: ::prost::alloc::string::String,
+    /// Глобальный сектор экономики, к которому относится компания (например, "Technology", "Healthcare")
+    #[prost(string, tag = "3")]
+    pub sector: ::prost::alloc::string::String,
+    /// Отрасль (подотрасль) деятельности компании (например, "Software - Application")
+    #[prost(string, tag = "4")]
+    pub sub_sector: ::prost::alloc::string::String,
+    /// Уникальный идентификатор компании в базе данных SEC США (Central Index Key)
+    #[prost(string, tag = "5")]
+    pub cik: ::prost::alloc::string::String,
+}
 /// Допустимая цена
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
 #[repr(i32)]
@@ -650,7 +752,7 @@ pub mod assets_service_client {
                 );
             self.inner.unary(req, path, codec).await
         }
-        /// Получение списка доступных инструментов, их описание
+        /// Получение списка доступных для торговли инструментов, их описание
         /// Пример HTTP запроса:
         /// GET /v1/assets
         /// Authorization: <token>
@@ -678,7 +780,7 @@ pub mod assets_service_client {
                 );
             self.inner.unary(req, path, codec).await
         }
-        /// Получение списка всех инструментов, их описание
+        /// Получение списка всех инструментов, в том числе индикативных и архивных, их описание
         /// Пример HTTP запроса:
         /// GET /v1/assets/all?cursor=56658&only_disabled=true
         /// Authorization: <token>
@@ -868,6 +970,36 @@ pub mod assets_service_client {
             req.extensions_mut()
                 .insert(
                     GrpcMethod::new("grpc.tradeapi.v1.assets.AssetsService", "Clock"),
+                );
+            self.inner.unary(req, path, codec).await
+        }
+        /// Получить состав биржевого индекса по его символу
+        pub async fn get_constituents(
+            &mut self,
+            request: impl tonic::IntoRequest<super::GetConstituentsRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::GetConstituentsResponse>,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::unknown(
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic_prost::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/grpc.tradeapi.v1.assets.AssetsService/GetConstituents",
+            );
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(
+                    GrpcMethod::new(
+                        "grpc.tradeapi.v1.assets.AssetsService",
+                        "GetConstituents",
+                    ),
                 );
             self.inner.unary(req, path, codec).await
         }

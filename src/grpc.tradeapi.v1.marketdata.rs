@@ -224,6 +224,11 @@ pub struct Quote {
     pub change: ::core::option::Option<
         super::super::super::super::google::r#type::Decimal,
     >,
+    /// Открытый интерес. Общее количество незакрытых (активных) контрактов по деривативу.
+    #[prost(message, optional, tag = "16")]
+    pub open_interest: ::core::option::Option<
+        super::super::super::super::google::r#type::Decimal,
+    >,
     #[prost(oneof = "quote::Additions", tags = "50")]
     pub additions: ::core::option::Option<quote::Additions>,
 }
@@ -394,6 +399,11 @@ pub struct Trade {
     /// Сторона сделки (buy или sell)
     #[prost(enumeration = "super::Side", tag = "6")]
     pub side: i32,
+    /// Открытый интерес на момент совершения сделки.
+    #[prost(message, optional, tag = "7")]
+    pub open_interest: ::core::option::Option<
+        super::super::super::super::google::r#type::Decimal,
+    >,
 }
 /// Ошибка стрим сервиса
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
