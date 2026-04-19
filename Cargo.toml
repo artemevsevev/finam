@@ -1,6 +1,6 @@
 [package]
 name = "finam"
-version = "0.11.1"
+version = "0.12.0"
 edition = "2024"
 authors = ["Artem Evsevev <artem@qrsoft.ru>"]
 description = "SDK для работы с API Финам"
@@ -16,7 +16,7 @@ log = "0.4.29"
 prost = "0.14.3"
 prost-types = "0.14.3"
 thiserror = "2.0.18"
-tokio = "1.50.0"
+tokio = "1.52.1"
 tonic = { version = "0.14.5", features = [
     "tls-ring",
     "tls-native-roots",
@@ -25,5 +25,5 @@ tonic = { version = "0.14.5", features = [
 tonic-prost = { version = "0.14.5" }
 
 [dev-dependencies]
-env_logger = "0.11.9"
-tokio = { version = "1.50.0", features = ["full"] }
+env_logger = "0.11.10"
+tokio = { version = "1.52.1", features = ["full"] }
