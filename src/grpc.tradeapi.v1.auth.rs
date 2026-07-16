@@ -5,6 +5,9 @@ pub struct AuthRequest {
     /// API токен (secret key)
     #[prost(string, tag = "1")]
     pub secret: ::prost::alloc::string::String,
+    /// Идентификатор приложения-источника запроса
+    #[prost(string, tag = "2")]
+    pub source_app_id: ::prost::alloc::string::String,
 }
 /// Информация об авторизации
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
@@ -130,6 +133,9 @@ pub struct SubscribeJwtRenewalRequest {
     /// API токен (secret key)
     #[prost(string, tag = "1")]
     pub secret: ::prost::alloc::string::String,
+    /// Идентификатор приложения-источника запроса
+    #[prost(string, tag = "2")]
+    pub source_app_id: ::prost::alloc::string::String,
 }
 /// Обновленный токен. Стрим
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]

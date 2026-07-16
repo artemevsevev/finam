@@ -18,6 +18,9 @@ use crate::proto::grpc::tradeapi::v1::{
 
 pub mod proto;
 
+/// Идентификатор приложения-источника запроса, передаваемый при аутентификации.
+const SOURCE_APP_ID: &str = "https://github.com/artemevsevev/finam";
+
 pub type FinamAccountsServiceClient =
     AccountsServiceClient<InterceptedService<Channel, FinamSdkInterceptor>>;
 pub type FinamAssetsServiceClient =
@@ -312,7 +315,10 @@ impl Interceptor for FinamSdkInterceptor {
 async fn generate_jwt_token(channel: Channel, secret: String) -> Result<String, FinamSdkError> {
     let mut auth_service_client = AuthServiceClient::new(channel);
     let response = auth_service_client
-        .auth(AuthRequest { secret })
+        .auth(AuthRequest {
+            secret,
+            source_app_id: SOURCE_APP_ID.to_string(),
+        })
         .await?
         .into_inner();
 
