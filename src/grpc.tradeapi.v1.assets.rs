@@ -592,6 +592,11 @@ pub struct Constituents {
     /// Уникальный идентификатор компании в базе данных SEC США (Central Index Key)
     #[prost(string, tag = "5")]
     pub cik: ::prost::alloc::string::String,
+    /// Дата добавления бумаги в индекс
+    #[prost(message, optional, tag = "6")]
+    pub index_inclusion_date: ::core::option::Option<
+        super::super::super::super::google::r#type::Date,
+    >,
 }
 /// Допустимая цена
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]

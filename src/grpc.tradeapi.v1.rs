@@ -62,4 +62,14 @@ pub struct AccountTrade {
     /// Метка заявки. (максимум 128 символов)
     #[prost(string, tag = "9")]
     pub comment: ::prost::alloc::string::String,
+    /// НКД (заполняется на следующий день после даты совершения сделки)
+    #[prost(message, optional, tag = "10")]
+    pub accrued_interest: ::core::option::Option<
+        super::super::super::google::r#type::Decimal,
+    >,
+    /// Валюта цены (например, RUB, USD, EUR)
+    /// Примечание: поле заполняется только при использовании метода Trades
+    /// Для SubscribeTrades данное поле может быть пустым в связи с различиями в источниках данных. При обработке сделок из подписки рекомендуется учитывать возможность пустого значения.
+    #[prost(string, tag = "11")]
+    pub currency: ::prost::alloc::string::String,
 }

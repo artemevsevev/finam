@@ -251,6 +251,9 @@ pub struct OrderState {
     /// Информация о SL/TP заявке
     #[prost(message, optional, tag = "11")]
     pub sltp_order: ::core::option::Option<SltpOrder>,
+    /// Идентификатор биржевой заявки, порожденной в результате срабатывания условия или достижения стоп-цены.
+    #[prost(string, tag = "12")]
+    pub triggered_order_id: ::prost::alloc::string::String,
 }
 /// Запрос получения списка торговых заявок
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
