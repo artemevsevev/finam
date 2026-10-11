@@ -1,6 +1,6 @@
 # Finam API SDK
 
-Версия API: [2.17.0 (01.07.2026)](https://api.finam.ru/chanchelog/2-17-0/)
+Версия API: [2.23.0 (01.10.2026)](https://api.finam.ru/changelog/2-23-0/)
 
 Документация: [https://api.finam.ru/getting-started/](https://api.finam.ru/getting-started/)
 
