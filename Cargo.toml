@@ -12,11 +12,11 @@ categories = ["finance"]
 exclude = ["finam-trade-api/*", "googleapis/*"]
 
 [dependencies]
-log = "0.4.33"
+log = "0.4.34"
 prost = "0.14.4"
 prost-types = "0.14.4"
-thiserror = "2.0.18"
-tokio = "1.52.3"
+thiserror = "2.0.21"
+tokio = "1.53.2"
 tonic = { version = "0.14.6", features = [
     "tls-ring",
     "tls-native-roots",
@@ -26,4 +26,4 @@ tonic-prost = { version = "0.14.6" }
 
 [dev-dependencies]
 env_logger = "0.11.11"
-tokio = { version = "1.52.3", features = ["full"] }
+tokio = { version = "1.53.2", features = ["full"] }

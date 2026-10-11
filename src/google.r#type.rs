@@ -86,9 +86,9 @@ pub struct Interval {
     /// or after the start.
     #[prost(message, optional, tag = "1")]
     pub start_time: ::core::option::Option<::prost_types::Timestamp>,
-    /// Optional. Exclusive end of the interval.
+    /// Exclusive end of the interval.
     ///
-    /// If specified, a Timestamp matching this interval will have to be before the
+    /// A Timestamp matching this interval will have to be before the
     /// end.
     #[prost(message, optional, tag = "2")]
     pub end_time: ::core::option::Option<::prost_types::Timestamp>,

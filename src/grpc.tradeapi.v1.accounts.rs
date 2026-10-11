@@ -184,6 +184,12 @@ pub struct Position {
     pub unrealized_pnl: ::core::option::Option<
         super::super::super::super::google::r#type::Decimal,
     >,
+    /// Код валюты текущей цены. Только для общего типа счетов Московской Биржи
+    #[prost(string, tag = "8")]
+    pub current_price_currency: ::prost::alloc::string::String,
+    /// Код валюты средней цены. Только для общего типа счетов Московской Биржи
+    #[prost(string, tag = "9")]
+    pub average_price_currency: ::prost::alloc::string::String,
 }
 /// Информация о транзакции
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
@@ -201,7 +207,7 @@ pub struct Transaction {
     /// Символ инструмента
     #[prost(string, tag = "5")]
     pub symbol: ::prost::alloc::string::String,
-    /// Изменение в деньгах
+    /// Изменение в деньгах, в рублях
     #[prost(message, optional, tag = "6")]
     pub change: ::core::option::Option<
         super::super::super::super::google::r#type::Money,
@@ -220,6 +226,14 @@ pub struct Transaction {
     pub change_qty: ::core::option::Option<
         super::super::super::super::google::r#type::Decimal,
     >,
+    /// Изменение в деньгах, в валюте инструмента
+    #[prost(message, optional, tag = "11")]
+    pub change_original: ::core::option::Option<
+        super::super::super::super::google::r#type::Money,
+    >,
+    /// Полный список тикеров, входящих в транзакцию. Поле symbol сохраняется и заполняется первым элементом для обратной совместимости.
+    #[prost(string, repeated, tag = "12")]
+    pub symbols: ::prost::alloc::vec::Vec<::prost::alloc::string::String>,
 }
 /// Nested message and enum types in `Transaction`.
 pub mod transaction {

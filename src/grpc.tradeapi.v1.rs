@@ -72,4 +72,22 @@ pub struct AccountTrade {
     /// Для SubscribeTrades данное поле может быть пустым в связи с различиями в источниках данных. При обработке сделок из подписки рекомендуется учитывать возможность пустого значения.
     #[prost(string, tag = "11")]
     pub currency: ::prost::alloc::string::String,
+    /// Комиссия. Заполняется для исторических сделок
+    #[prost(message, optional, tag = "12")]
+    pub commission: ::core::option::Option<account_trade::Commission>,
+}
+/// Nested message and enum types in `AccountTrade`.
+pub mod account_trade {
+    /// Комиссия по сделке
+    #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
+    pub struct Commission {
+        /// Значение комиссии
+        #[prost(message, optional, tag = "1")]
+        pub value: ::core::option::Option<
+            super::super::super::super::google::r#type::Decimal,
+        >,
+        /// Валюта комиссии
+        #[prost(string, tag = "2")]
+        pub currency: ::prost::alloc::string::String,
+    }
 }
