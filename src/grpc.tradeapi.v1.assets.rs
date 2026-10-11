@@ -231,6 +231,9 @@ pub struct GetAssetParamsResponse {
     /// Допустимая цена. Помогает определить можно ли выставлять ордера с отрицательной ценой для финансового инструмента
     #[prost(enumeration = "PriceType", tag = "13")]
     pub price_type: i32,
+    /// Размер лота инструмента для торговых операций. Если поле равно 0 - значение отсутствует
+    #[prost(int64, tag = "14")]
+    pub trade_lot_size: i64,
 }
 /// Запрос получения цепочки опционов
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
@@ -596,6 +599,11 @@ pub struct Constituents {
     #[prost(message, optional, tag = "6")]
     pub index_inclusion_date: ::core::option::Option<
         super::super::super::super::google::r#type::Date,
+    >,
+    /// Вес инструмента в индексе
+    #[prost(message, optional, tag = "7")]
+    pub weight: ::core::option::Option<
+        super::super::super::super::google::r#type::Decimal,
     >,
 }
 /// Допустимая цена

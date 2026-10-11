@@ -254,6 +254,9 @@ pub struct OrderState {
     /// Идентификатор биржевой заявки, порожденной в результате срабатывания условия или достижения стоп-цены.
     #[prost(string, tag = "12")]
     pub triggered_order_id: ::prost::alloc::string::String,
+    /// Описание статуса заявки
+    #[prost(message, optional, tag = "13")]
+    pub status_description: ::core::option::Option<::prost::alloc::string::String>,
 }
 /// Запрос получения списка торговых заявок
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
@@ -336,6 +339,20 @@ pub struct SltpOrder {
     /// Метка заявки. (максимум 128 символов)
     #[prost(string, tag = "23")]
     pub comment: ::prost::alloc::string::String,
+    /// Единица измерения объёма для Stop Loss части.
+    /// Если SLTP_QTY_MEASURE_PERCENT — quantity_sl трактуется как процент (0–100) от позиции на момент исполнения.
+    #[prost(enumeration = "SltpQtyMeasure", tag = "24")]
+    pub sl_qty_measure: i32,
+    /// Единица измерения объёма для Take Profit части.
+    /// Если SLTP_QTY_MEASURE_PERCENT — quantity_tp трактуется как процент (0–100) от позиции на момент исполнения.
+    #[prost(enumeration = "SltpQtyMeasure", tag = "25")]
+    pub tp_qty_measure: i32,
+    /// Защитное время StopLoss, в секундах. Допустимы только неотрицательные целочисленные значения. Если поле не указано, значение принимается равным нулю.
+    #[prost(message, optional, tag = "26")]
+    pub sl_guard_time: ::core::option::Option<i32>,
+    /// Защитное время TakeProfit, в секундах. Допустимы только неотрицательные целочисленные значения. Если поле не указано, значение принимается равным нулю.
+    #[prost(message, optional, tag = "27")]
+    pub tp_guard_time: ::core::option::Option<i32>,
 }
 /// Тип заявки
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
@@ -675,6 +692,39 @@ impl TpSpreadMeasure {
             "TP_SPREAD_MEASURE_UNDEFINED" => Some(Self::Undefined),
             "TP_SPREAD_MEASURE_VALUE" => Some(Self::Value),
             "TP_SPREAD_MEASURE_PERCENT" => Some(Self::Percent),
+            _ => None,
+        }
+    }
+}
+/// Единица измерения объёма для SL/TP заявки
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
+#[repr(i32)]
+pub enum SltpQtyMeasure {
+    /// Не определено
+    Undefined = 0,
+    /// Количество в единицах (штуках). Значение по умолчанию.
+    Value = 1,
+    /// Процент от позиции на момент исполнения, точность до сотых процента
+    Percent = 2,
+}
+impl SltpQtyMeasure {
+    /// String value of the enum field names used in the ProtoBuf definition.
+    ///
+    /// The values are not transformed in any way and thus are considered stable
+    /// (if the ProtoBuf definition does not change) and safe for programmatic use.
+    pub fn as_str_name(&self) -> &'static str {
+        match self {
+            Self::Undefined => "SLTP_QTY_MEASURE_UNDEFINED",
+            Self::Value => "SLTP_QTY_MEASURE_VALUE",
+            Self::Percent => "SLTP_QTY_MEASURE_PERCENT",
+        }
+    }
+    /// Creates an enum from field names used in the ProtoBuf definition.
+    pub fn from_str_name(value: &str) -> ::core::option::Option<Self> {
+        match value {
+            "SLTP_QTY_MEASURE_UNDEFINED" => Some(Self::Undefined),
+            "SLTP_QTY_MEASURE_VALUE" => Some(Self::Value),
+            "SLTP_QTY_MEASURE_PERCENT" => Some(Self::Percent),
             _ => None,
         }
     }

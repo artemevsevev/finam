@@ -155,6 +155,9 @@ pub struct Bar {
     pub volume: ::core::option::Option<
         super::super::super::super::google::r#type::Decimal,
     >,
+    /// Признак того, что данные являются снэпшотом
+    #[prost(bool, tag = "7")]
+    pub is_data_snapshot: bool,
 }
 /// Информация о котировке
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
@@ -229,6 +232,9 @@ pub struct Quote {
     pub open_interest: ::core::option::Option<
         super::super::super::super::google::r#type::Decimal,
     >,
+    /// Признак того, что данные являются снэпшотом
+    #[prost(bool, tag = "17")]
+    pub is_data_snapshot: bool,
     #[prost(oneof = "quote::Additions", tags = "50")]
     pub additions: ::core::option::Option<quote::Additions>,
 }
@@ -404,6 +410,9 @@ pub struct Trade {
     pub open_interest: ::core::option::Option<
         super::super::super::super::google::r#type::Decimal,
     >,
+    /// Признак того, что данные являются снэпшотом
+    #[prost(bool, tag = "8")]
+    pub is_data_snapshot: bool,
 }
 /// Ошибка стрим сервиса
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
@@ -424,6 +433,9 @@ pub struct StreamOrderBook {
     /// Уровни стакана
     #[prost(message, repeated, tag = "2")]
     pub rows: ::prost::alloc::vec::Vec<stream_order_book::Row>,
+    /// Признак того, что данные являются снэпшотом
+    #[prost(bool, tag = "3")]
+    pub is_data_snapshot: bool,
 }
 /// Nested message and enum types in `StreamOrderBook`.
 pub mod stream_order_book {
